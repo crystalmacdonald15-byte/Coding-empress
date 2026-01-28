@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <meta http-equiv="CONTENT-TYPE" content="text/html; charset=UTF-8">
+  <title>Crystal</title>
+</head>
+<body>
+  <h1>
+    Crystal
+  </h1>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>My Aesthetic Journal</title>
+
+<style>
+:root {
+  --main:#ff69b4;
+  --bg1:#ffd6e8;
+  --bg2:#fff0f6;
+}
+
+body {
+  background: linear-gradient(135deg,var(--bg1),var(--bg2));
+  font-family: Poppins, cursive;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  margin:0;
+}
+
+.app {
+  background:white;
+  width:380px;
+  padding:20px;
+  border-radius:22px;
+  box-shadow:0 10px 35px rgba(255,105,180,.35);
+}
+
+h1 { text-align:center; color:var(--main); }
+
+textarea {
+  width:100%;
+  height:100px;
+  border-radius:14px;
+  border:2px solid var(--main);
+  padding:10px;
+  resize:none;
+}
+
+button, select {
+  width:100%;
+  margin-top:8px;
+  padding:10px;
+  border:none;
+  border-radius:20px;
+  background:var(--main);
+  color:white;
+  cursor:pointer;
+}
+
+.entry {
+  background:#fff0f6;
+  margin-top:10px;
+  padding:10px;
+  border-radius:12px;
+  font-size:13px;
+}
+
+.date { font-size:11px; color:#ff69b4; }
+
+.emoji span { cursor:pointer; font-size:20px; margin:4px; }
+
+img { max-width:100%; border-radius:10px; margin-top:5px; }
+
+.hidden { display:none; }
+</style>
+</head>
+
+<body>
+
+<div class="app" id="lock">
+  <h1>🔒 My Journal</h1>
+  <input type="password" id="pass" placeholder="Password">
+  <button onclick="unlock()">Unlock</button>
+</div>
+
+<div class="app hidden" id="journal">
+  <h1>💖 My Journal 💖</h1>
+
+  <select onchange="theme(this.value)">
+    <option value="pink">Pink</option>
+    <option value="lavender">Lavender</option>
+    <option value="peach">Peach</option>
+  </select>
+
+  <input type="date" id="date">
+
+  <textarea id="text" placeholder="Dear diary... 🌸"></textarea>
+
+  <div class="emoji">
+    <span onclick="add('💖')">💖</span>
+    <span onclick="add('🌸')">🌸</span>
+    <span onclick="add('✨')">✨</span>
+    <span onclick="add('🎀')">🎀</span>
+    <span onclick="add('💕')">💕</span>
+  </div>
+
+  <input type="file" accept="image/*" onchange="addImage(event)">
+
+  <button onclick="save()">Save Entry</button>
+  <button onclick="exportData()">Export Journal</button>
+  <input type="file" onchange="importData(event)">
+
+  <div id="entries"></div>
+</div>
+
+<script>
+const PASSWORD="pink123";
+
+function unlock(){
+  if(pass.value===PASSWORD){
+    lock.classList.add("hidden");
+    journal.classList.remove("hidden");
+    date.value=new Date().toISOString().split("T")[0];
+    load();
+  } else alert("Wrong password 💔");
+}
+
+function add(e){ text.value+=e; }
+
+function save(){
+  const d=date.value;
+  const data=JSON.parse(localStorage.getItem("journal")||"{}");
+  if(!data[d]) data[d]=[];
+  data[d].unshift({text:text.value, time:new Date().toLocaleTimeString()});
+  localStorage.setItem("journal",JSON.stringify(data));
+  text.value="";
+  load();
+}
+
+function load(){
+  entries.innerHTML="";
+  const d=date.value;
+  const data=JSON.parse(localStorage.getItem("journal")||"{}");
+  (data[d]||[]).forEach(e=>{
+    entries.innerHTML+=`<div class="entry"><div class="date">${d} ${e.time}</div>${e.text}</div>`;
+  });
+}
+
+date.onchange=load;
+
+function addImage(e){
+  const reader=new FileReader();
+  reader.onload=()=>text.value+=`<img src="${reader.result}">`;
+  reader.readAsDataURL(e.target.files[0]);
+}
+
+function exportData(){
+  const blob=new Blob([localStorage.getItem("journal")],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="my_journal.json";
+  a.click();
+}
+
+function importData(e){
+  const r=new FileReader();
+  r.onload=()=>{localStorage.setItem("journal",r.result); load();}
+  r.readAsText(e.target.files[0]);
+}
+
+function theme(t){
+  if(t==="lavender"){document.documentElement.style.setProperty("--main","#b57edc")}
+  if(t==="peach"){document.documentElement.style.setProperty("--main","#ff9f80")}
+  if(t==="pink"){document.documentElement.style.setProperty("--main","#ff69b4")}
+}
+</script>
+
+</body>
+</html>
